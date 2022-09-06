@@ -32,144 +32,161 @@ const Calculator = () => {
   //input 1
   const [input1, setInput1] = useState("");
   // input 2
-  const [input2, setInput2] = useState();
+  // input2 is last entered input except for first time
+  const [input2, setInput2] = useState("");
 
   //state for calculation result
-  const [result, setResult] = useState();
+  const [result, setResult] = useState("");
 
   //state for storing operator
   const [operator, setOperator] = useState("");
 
   //input click handler
   const onInputButtonClick = (inputType) => {
-    let inputDisplay = `${display} ${inputType}`;
-    setDisplay(inputDisplay);
+    // let inputDisplay = `${display ? display + " " + inputType : inputType}`;
+    // setDisplay(inputDisplay);
+    if (inputType === "ENTER") {
+      //input1 is taken as initial input
+      //once input1 is resolved with result in initial operation
+      //further operation will be evaluated on result
+      //checking if ENTER was pressed on first time directly
+      if (!result && !input2 && !input1 && !operator) {
+        return false;
+      } else if (input1 && !result && !operator && !input2) {
+        return false;
+      } else if (result && operator && input2) {
+        setResult(result);
+      }
+      //check if only initial input exist and ENTER was pressed
+    }
     switch (inputType) {
       case "C":
         setInput1("");
-        setInput2(null);
+        // setInput2(null);
         setOperator("");
         setResult(null);
         setDisplay("");
         break;
       case "+":
-        if (input1 && result) {
+        if (input1) {
           setOperator(inputType);
+          setDisplay(`${display ? display + " " + inputType : inputType}`);
         } else {
           break;
         }
         break;
       case "-":
-        if (input1 && result) {
+        if (input1) {
           setOperator(inputType);
+          setDisplay(`${display ? display + " " + inputType : inputType}`);
         } else {
           break;
         }
         break;
       case "/":
-        if (input1 && result) {
+        if (input1) {
           setOperator(inputType);
+          setDisplay(`${display ? display + " " + inputType : inputType}`);
         } else {
           break;
         }
         break;
       case "x":
-        if (input1 && result) {
+        if (input1) {
           setOperator(inputType);
+          setDisplay(`${display ? display + " " + inputType : inputType}`);
         } else {
           break;
         }
         break;
       case ".":
+        //append . to input1 on first time
         if (input1 && input1.indexOf(inputType) == -1) {
           setInput1(input1 + inputType);
-          setDisplay(`${display}${inputType}`);
-        } else {
-          break;
+          setDisplay(`${display ? display + " " + inputType : inputType}`);
         }
         break;
       case 0:
-        if (input1 && input1.includes(inputType.toString())) {
-          break;
-        } else {
-          setInput1(input1 + inputType);
-          setDisplay(`${display} ${inputType}`);
-        }
+        setInput1(`${input1}${inputType}`);
+        //set 0 to input2 used in case of 'ENTER'
+        setInput2(input2 + inputType);
+        setDisplay(`${display ? display + " " + inputType : inputType}`);
         break;
       case "%":
-        if (input1 && result) {
+        if (input1) {
           setOperator(inputType);
+          setDisplay(`${display ? display + " " + inputType : inputType}`);
         } else {
           break;
         }
         break;
       case "+-":
+        setDisplay(`${display ? display + "-" + inputType : inputType}`);
+        let negateString =
+          input1 && input1.indexOf(inputType) != -1 ? `${"-"}${input1}` : "";
+        setInput1(negateString);
         break;
       default:
-        //check if input is a number and store in state
+        //check if numbers are entered in input
+        //perform operations
         if (typeof inputType === "number" && !isNaN(inputType)) {
-          let evalvuation;
           debugger;
-          if (input1 && operator) {
-            setInput2(inputType);
-            //operations
-            switch (operator) {
-              case "+":
-                if (result) {
-                  setResult((preVal) => parseFloat(preVal + inputType));
-                } else {
-                  setResult(parseFloat(input1) + inputType);
-                }
-                //reset input1
-                // setInput1(null);
-                break;
-              case "-":
-                if (result) {
-                  setResult((preVal) => parseFloat(preVal - inputType));
-                } else {
-                  setResult(parseFloat(input1) - inputType);
-                }
-                // setResult(Number(input1) - inputType);
-                // //reset input1
-                // setInput1(null);
-                break;
-              case "x":
-                if (result) {
-                  setResult((preVal) => parseFloat(preVal * inputType));
-                } else {
-                  setResult(parseFloat(input1) * inputType);
-                }
-                // setResult(Number(input1) * inputType);
-                // //reset input1
-                // setInput1(null);
-                break;
-              case "/":
-                if (result) {
-                  setResult((preVal) => parseFloat(preVal / inputType));
-                } else {
-                  setResult(parseFloat(input1) / inputType);
-                }
-                // setResult(Number(input1) / inputType);
-                // //reset input1
-                // setInput1(null);
-                break;
-              default:
-                break;
-            }
+          setDisplay(`${display ? display + " " + inputType : inputType}`);
+          if (!input1) {
+            setInput1(inputType);
           } else {
             debugger;
-            //in case user initially only types numbers
-            //it will be concatenated to input1
-            //until user selects an operator & input2
-            setInput1(input1 + inputType);
+            //operations
+
+            //check if an operation is selected
+            if (operator) {
+              switch (operator) {
+                case "+":
+                  setResult(parseFloat(input1) + inputType);
+                  setInput2(inputType);
+                  setInput1("");
+                  break;
+                case "-":
+                  setResult(parseFloat(input1) - inputType);
+                  setInput2(inputType);
+                  setInput1("");
+                  break;
+                case "x":
+                  setResult(parseFloat(input1) * inputType);
+                  setInput2(inputType);
+                  setInput1("");
+                  break;
+                case "/":
+                  //break and do nothing if try to divide by 0
+                  if (input1 == "0" || inputType == "0") {
+                    break;
+                  } else {
+                    setResult(parseFloat(input1) / inputType);
+                    setInput2(inputType);
+                    setInput1("");
+                  }
+                  break;
+                case "%":
+                  let percentage;
+                  percentage = getPercentage(parseFloat(input1), inputType);
+                  setResult(percentage);
+                  setInput2(inputType);
+                  setInput1("");
+                  break;
+                default:
+                  break;
+              }
+            } else {
+              //in case user initially only types numbers
+              //it will be concatenated to input1
+              //until user selects an operator & further input numbers
+              setInput1(`${input1}${inputType}`);
+            }
           }
         }
         break;
     }
   };
-
-  //set result
-  // const onEnterClick = () => {};
 
   //get percentage value
   const getPercentage = (num1, num2) => {
@@ -206,9 +223,10 @@ const Calculator = () => {
           marginBottom: "15px",
           borderRadius: "6px"
         }}
+        block
       >
         <Row gutter={8}>
-          <Col span={24}>
+          <Col span={24} block>
             <InputNumber
               value={display}
               bordered={false}
@@ -216,7 +234,7 @@ const Calculator = () => {
               style={{ textAlign: "left", width: "100%" }}
             />
           </Col>
-          <Col span={24}>
+          <Col span={24} block>
             <InputNumber
               value={result}
               bordered={false}
@@ -230,7 +248,7 @@ const Calculator = () => {
         <Row gutter={[58, 8]}>
           {calculatorInputs.map((inputType) => {
             return (
-              <Col span={4} block>
+              <Col span={inputType === "ENTER" ? 10 : 4} block>
                 <Button
                   type="primary"
                   size="large"
