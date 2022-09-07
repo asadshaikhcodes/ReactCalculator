@@ -45,6 +45,7 @@ const Calculator = () => {
   const onInputButtonClick = (inputType) => {
     // let inputDisplay = `${display ? display + " " + inputType : inputType}`;
     // setDisplay(inputDisplay);
+    let evaluate;
     if (inputType === "ENTER") {
       //input1 is taken as initial input
       //once input1 is resolved with result in initial operation
@@ -54,10 +55,85 @@ const Calculator = () => {
         return false;
       } else if (input1 && !result && !operator && !input2) {
         return false;
-      } else if (result && operator && input2) {
-        setResult(result);
+      } else if (operator && input2) {
+        switch (operator) {
+          case "+":
+            //if previous result exist add to the result
+            if (result) {
+              evaluate = parseFloat(result) + parseFloat(input2);
+              setResult(parseFloat(evaluate).toFixed(1));
+            } else {
+              evaluate = parseFloat(input1) + parseFloat(input2);
+              setResult(parseFloat(evaluate).toFixed(1));
+            }
+            setInput2("");
+            setOperator("");
+            setInput1("");
+            break;
+          case "-":
+            if (result) {
+              setResult(inputType - parseFloat(parseFloat(result).toFixed(1)));
+              setInput2(inputType);
+              setInput1("");
+            } else {
+              setResult(inputType - parseFloat(parseFloat(input1).toFixed(1)));
+              setInput2(inputType);
+              setInput1("");
+            }
+            break;
+          case "x":
+            if (result) {
+              setResult(inputType * parseFloat(parseFloat(result).toFixed(1)));
+              setInput2(inputType);
+              setInput1("");
+            } else {
+              setResult(inputType + parseFloat(parseFloat(input1).toFixed(1)));
+              setInput2(inputType);
+              setInput1("");
+            }
+            break;
+          case "/":
+            //break and do nothing if try to divide by 0
+            if (result) {
+              if (result == "0" || inputType == "0") {
+                break;
+              } else {
+                setResult(
+                  inputType / parseFloat(parseFloat(result).toFixed(1))
+                );
+                setInput2(inputType);
+                setInput1("");
+              }
+            } else {
+              if (input1 == "0" || inputType == "0") {
+                break;
+              } else {
+                setResult(
+                  inputType / parseFloat(parseFloat(input1).toFixed(1))
+                );
+                setInput2(inputType);
+                setInput1("");
+              }
+            }
+            break;
+          case "%":
+            let percentage;
+            if (result) {
+              percentage = getPercentage(parseFloat(result), inputType);
+              setResult(parseFloat(percentage).toFixed(1));
+              setInput2(inputType);
+              setInput1("");
+            } else {
+              percentage = getPercentage(parseFloat(input1), inputType);
+              setResult(parseFloat(percentage).toFixed(1));
+              setInput2(inputType);
+              setInput1("");
+            }
+            break;
+          default:
+            break;
+        }
       }
-      //check if only initial input exist and ENTER was pressed
     }
     switch (inputType) {
       case "C":
@@ -68,15 +144,29 @@ const Calculator = () => {
         setDisplay("");
         break;
       case "+":
-        if (input1) {
+        // if (input1 && input2 && !result) {
+        //   evaluate = parseFloat(input1) + parseFloat(input2);
+        //   setResult(parseFloat(evaluate).toFixed(1));
+        //   setOperator(inputType);
+        //   setDisplay(`${display ? display + " " + inputType : inputType}`);
+        //   setInput1("");
+        //   setInput2("");
+        // } else if (result) {
+        //   evaluate = parseFloat(result) + parseFloat(input2);
+        //   setResult(parseFloat(evaluate).toFixed(1));
+        //   setOperator(inputType);
+        //   setDisplay(`${display ? display + " " + inputType : inputType}`);
+        //   setInput1("");
+        //   setInput2("");
+        // }
+        //set operator for first time
+        if (input1 || result) {
           setOperator(inputType);
           setDisplay(`${display ? display + " " + inputType : inputType}`);
-        } else {
-          break;
         }
         break;
       case "-":
-        if (input1) {
+        if (input1 || result) {
           setOperator(inputType);
           setDisplay(`${display ? display + " " + inputType : inputType}`);
         } else {
@@ -84,7 +174,7 @@ const Calculator = () => {
         }
         break;
       case "/":
-        if (input1) {
+        if (input1 || result) {
           setOperator(inputType);
           setDisplay(`${display ? display + " " + inputType : inputType}`);
         } else {
@@ -92,7 +182,7 @@ const Calculator = () => {
         }
         break;
       case "x":
-        if (input1) {
+        if (input1 || result) {
           setOperator(inputType);
           setDisplay(`${display ? display + " " + inputType : inputType}`);
         } else {
@@ -109,7 +199,7 @@ const Calculator = () => {
       case 0:
         setInput1(`${input1}${inputType}`);
         //set 0 to input2 used in case of 'ENTER'
-        setInput2(input2 + inputType);
+        setInput2(`${input2}${inputType}`);
         setDisplay(`${display ? display + " " + inputType : inputType}`);
         break;
       case "%":
@@ -121,10 +211,32 @@ const Calculator = () => {
         }
         break;
       case "+-":
-        setDisplay(`${display ? display + "-" + inputType : inputType}`);
-        let negateString =
-          input1 && input1.indexOf(inputType) != -1 ? `${"-"}${input1}` : "";
-        setInput1(negateString);
+        let negate;
+        if (result) {
+          if (result.toString().indexOf("-") != -1) {
+            negate = `${result.toString().replace("-", "")}`;
+            setResult(result.toString().replace("-", ""));
+            //reverse negateive number on screen
+            setDisplay(display.replace(result.toString(), negate));
+          } else {
+            negate = `${"-"}${result}`;
+            setResult(negate);
+            //show negative number on screen
+            setDisplay(display.replace(result.toString(), negate));
+          }
+        } else {
+          if (input1 && input1.toString().indexOf("-") != -1) {
+            setInput1(input1.toString().replace("-", ""));
+            negate = `${input1.toString().replace("-", "")}`;
+            //reverse negateive number on screen
+            setDisplay(display.replace(input1.toString(), negate));
+          } else {
+            negate = `${"-"}${input1}`;
+            setInput1(negate);
+            //show negative number on screen
+            setDisplay(display.replace(input1.toString(), negate));
+          }
+        }
         break;
       default:
         //check if numbers are entered in input
@@ -132,56 +244,132 @@ const Calculator = () => {
         if (typeof inputType === "number" && !isNaN(inputType)) {
           debugger;
           setDisplay(`${display ? display + " " + inputType : inputType}`);
-          if (!input1) {
-            setInput1(inputType);
+          if (operator) {
+            setInput2(`${input2}${inputType}`);
+            switch (operator) {
+              case "+":
+                if (input1 && input2 && !result) {
+                  evaluate = parseFloat(input1) + parseFloat(input2);
+                  setResult(parseFloat(evaluate).toFixed(1));
+                  setDisplay(
+                    `${display ? display + " " + inputType : inputType}`
+                  );
+                  setInput1("");
+                  setInput2("");
+                } else if (result) {
+                  evaluate = parseFloat(result) + parseFloat(input2);
+                  setResult(parseFloat(evaluate).toFixed(1));
+                  setDisplay(
+                    `${display ? display + " " + inputType : inputType}`
+                  );
+                  setInput1("");
+                  setInput2("");
+                }
+                break;
+
+              default:
+                break;
+            }
           } else {
-            debugger;
+            setInput1(`${input1}${inputType}`);
             //operations
 
             //check if an operation is selected
-            if (operator) {
-              switch (operator) {
-                case "+":
-                  setResult(parseFloat(input1) + inputType);
-                  setInput2(inputType);
-                  setInput1("");
-                  break;
-                case "-":
-                  setResult(parseFloat(input1) - inputType);
-                  setInput2(inputType);
-                  setInput1("");
-                  break;
-                case "x":
-                  setResult(parseFloat(input1) * inputType);
-                  setInput2(inputType);
-                  setInput1("");
-                  break;
-                case "/":
-                  //break and do nothing if try to divide by 0
-                  if (input1 == "0" || inputType == "0") {
-                    break;
-                  } else {
-                    setResult(parseFloat(input1) / inputType);
-                    setInput2(inputType);
-                    setInput1("");
-                  }
-                  break;
-                case "%":
-                  let percentage;
-                  percentage = getPercentage(parseFloat(input1), inputType);
-                  setResult(percentage);
-                  setInput2(inputType);
-                  setInput1("");
-                  break;
-                default:
-                  break;
-              }
-            } else {
-              //in case user initially only types numbers
-              //it will be concatenated to input1
-              //until user selects an operator & further input numbers
-              setInput1(`${input1}${inputType}`);
-            }
+            // if (operator) {
+            //   // switch (operator) {
+            //   //   case "+":
+            //   //     if (result) {
+            //   //       setResult(
+            //   //         inputType + parseFloat(parseFloat(result).toFixed(1))
+            //   //       );
+            //   //       setInput2(inputType);
+            //   //       setInput1("");
+            //   //     } else {
+            //   //       setResult(
+            //   //         inputType + parseFloat(parseFloat(input1).toFixed(1))
+            //   //       );
+            //   //       setInput2(inputType);
+            //   //       setInput1("");
+            //   //     }
+            //   //     break;
+            //   //   case "-":
+            //   //     if (result) {
+            //   //       setResult(
+            //   //         inputType - parseFloat(parseFloat(result).toFixed(1))
+            //   //       );
+            //   //       setInput2(inputType);
+            //   //       setInput1("");
+            //   //     } else {
+            //   //       setResult(
+            //   //         inputType - parseFloat(parseFloat(input1).toFixed(1))
+            //   //       );
+            //   //       setInput2(inputType);
+            //   //       setInput1("");
+            //   //     }
+            //   //     break;
+            //   //   case "x":
+            //   //     if (result) {
+            //   //       setResult(
+            //   //         inputType * parseFloat(parseFloat(result).toFixed(1))
+            //   //       );
+            //   //       setInput2(inputType);
+            //   //       setInput1("");
+            //   //     } else {
+            //   //       setResult(
+            //   //         inputType + parseFloat(parseFloat(input1).toFixed(1))
+            //   //       );
+            //   //       setInput2(inputType);
+            //   //       setInput1("");
+            //   //     }
+            //   //     break;
+            //   //   case "/":
+            //   //     //break and do nothing if try to divide by 0
+            //   //     if (result) {
+            //   //       if (result == "0" || inputType == "0") {
+            //   //         break;
+            //   //       } else {
+            //   //         setResult(
+            //   //           inputType / parseFloat(parseFloat(result).toFixed(1))
+            //   //         );
+            //   //         setInput2(inputType);
+            //   //         setInput1("");
+            //   //       }
+            //   //     } else {
+            //   //       if (input1 == "0" || inputType == "0") {
+            //   //         break;
+            //   //       } else {
+            //   //         setResult(
+            //   //           inputType / parseFloat(parseFloat(input1).toFixed(1))
+            //   //         );
+            //   //         setInput2(inputType);
+            //   //         setInput1("");
+            //   //       }
+            //   //     }
+            //   //     break;
+            //   //   case "%":
+            //   //     let percentage;
+            //   //     if (result) {
+            //   //       percentage = getPercentage(parseFloat(result), inputType);
+            //   //       setResult(parseFloat(percentage).toFixed(1));
+            //   //       setInput2(inputType);
+            //   //       setInput1("");
+            //   //     } else {
+            //   //       percentage = getPercentage(parseFloat(input1), inputType);
+            //   //       setResult(parseFloat(percentage).toFixed(1));
+            //   //       setInput2(inputType);
+            //   //       setInput1("");
+            //   //     }
+            //   //     break;
+            //   //   default:
+            //   //     break;
+            //   // }
+            // }
+            // else {
+            //   //in case user initially only types numbers
+            //   //it will be concatenated to input1
+            //   //until user selects an operator & further input numbers
+            //   setInput1(`${input1}${inputType}`);
+            // }
           }
         }
         break;
