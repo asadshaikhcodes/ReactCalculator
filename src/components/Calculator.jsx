@@ -1,387 +1,59 @@
 import React, { useState } from "react";
-import { Col, Row, Button, InputNumber } from "antd";
-
+import { Col, Row, Button, InputNumber, Input } from "antd";
 //calculator inputs used for rendering on display
 const calculatorInputs = [
-  7,
-  8,
-  9,
-  "%",
-  "C",
-  4,
-  5,
-  6,
-  "x",
-  "/",
-  1,
-  2,
-  3,
-  "+",
-  "-",
-  ".",
-  0,
-  "+-",
-  "ENTER"
+  [7, 8, 9, "%", "C"],
+  [4, 5, 6, "x", "/"],
+  [1, 2, 3, "+", "-"],
+  [".", 0, "+-", "ENTER"]
 ];
-
 //calculator contains all the UI components such as button and input
 const Calculator = () => {
   //state to store input operations to display
   const [display, setDisplay] = useState("");
-
   //input 1
   const [input1, setInput1] = useState("");
-  // input 2
-  // input2 is last entered input except for first time
-  const [input2, setInput2] = useState("");
-
-  //state for calculation result
-  const [result, setResult] = useState("");
-
   //state for storing operator
   const [operator, setOperator] = useState("");
-
   //input click handler
   const onInputButtonClick = (inputType) => {
-    // let inputDisplay = `${display ? display + " " + inputType : inputType}`;
-    // setDisplay(inputDisplay);
-    let evaluate;
-    if (inputType === "ENTER") {
-      //input1 is taken as initial input
-      //once input1 is resolved with result in initial operation
-      //further operation will be evaluated on result
-      //checking if ENTER was pressed on first time directly
-      if (!result && !input2 && !input1 && !operator) {
-        return false;
-      } else if (input1 && !result && !operator && !input2) {
-        return false;
-      } else if (operator && input2) {
-        switch (operator) {
-          case "+":
-            //if previous result exist add to the result
-            if (result) {
-              evaluate = parseFloat(result) + parseFloat(input2);
-              setResult(parseFloat(evaluate).toFixed(1));
-            } else {
-              evaluate = parseFloat(input1) + parseFloat(input2);
-              setResult(parseFloat(evaluate).toFixed(1));
-            }
-            setInput2("");
-            setOperator("");
-            setInput1("");
-            break;
-          case "-":
-            if (result) {
-              setResult(inputType - parseFloat(parseFloat(result).toFixed(1)));
-              setInput2(inputType);
-              setInput1("");
-            } else {
-              setResult(inputType - parseFloat(parseFloat(input1).toFixed(1)));
-              setInput2(inputType);
-              setInput1("");
-            }
-            break;
-          case "x":
-            if (result) {
-              setResult(inputType * parseFloat(parseFloat(result).toFixed(1)));
-              setInput2(inputType);
-              setInput1("");
-            } else {
-              setResult(inputType + parseFloat(parseFloat(input1).toFixed(1)));
-              setInput2(inputType);
-              setInput1("");
-            }
-            break;
-          case "/":
-            //break and do nothing if try to divide by 0
-            if (result) {
-              if (result == "0" || inputType == "0") {
-                break;
-              } else {
-                setResult(
-                  inputType / parseFloat(parseFloat(result).toFixed(1))
-                );
-                setInput2(inputType);
-                setInput1("");
-              }
-            } else {
-              if (input1 == "0" || inputType == "0") {
-                break;
-              } else {
-                setResult(
-                  inputType / parseFloat(parseFloat(input1).toFixed(1))
-                );
-                setInput2(inputType);
-                setInput1("");
-              }
-            }
-            break;
-          case "%":
-            let percentage;
-            if (result) {
-              percentage = getPercentage(parseFloat(result), inputType);
-              setResult(parseFloat(percentage).toFixed(1));
-              setInput2(inputType);
-              setInput1("");
-            } else {
-              percentage = getPercentage(parseFloat(input1), inputType);
-              setResult(parseFloat(percentage).toFixed(1));
-              setInput2(inputType);
-              setInput1("");
-            }
-            break;
-          default:
-            break;
-        }
+    console.log(inputType);
+    if (typeof inputType === "number") {
+      setDisplay((display === "0" ? "" : display) + inputType);
+    } else if (inputType === "." && display.indexOf(".") === -1) {
+      setDisplay(display + inputType);
+    } else if (inputType === "+-") {
+      if (display.indexOf("-") === 0) {
+        setDisplay(display.substr(1, display.length));
+      } else {
+        setDisplay("-" + display);
       }
-    }
-    switch (inputType) {
-      case "C":
-        setInput1("");
-        // setInput2(null);
-        setOperator("");
-        setResult(null);
+    } else if (inputType === "C") {
+      setDisplay("");
+      setInput1("");
+      setOperator("");
+    } else if (inputType === "ENTER") {
+      setDisplay(
+        parseFloat(parseFloat(calculate(input1, operator, display)).toFixed(1))
+      );
+      setInput1("");
+      setOperator("");
+    } else {
+      if (!operator) {
+        setInput1(display);
         setDisplay("");
-        break;
-      case "+":
-        // if (input1 && input2 && !result) {
-        //   evaluate = parseFloat(input1) + parseFloat(input2);
-        //   setResult(parseFloat(evaluate).toFixed(1));
-        //   setOperator(inputType);
-        //   setDisplay(`${display ? display + " " + inputType : inputType}`);
-        //   setInput1("");
-        //   setInput2("");
-        // } else if (result) {
-        //   evaluate = parseFloat(result) + parseFloat(input2);
-        //   setResult(parseFloat(evaluate).toFixed(1));
-        //   setOperator(inputType);
-        //   setDisplay(`${display ? display + " " + inputType : inputType}`);
-        //   setInput1("");
-        //   setInput2("");
-        // }
-        //set operator for first time
-        if (input1 || result) {
-          setOperator(inputType);
-          setDisplay(`${display ? display + " " + inputType : inputType}`);
-        }
-        break;
-      case "-":
-        if (input1 || result) {
-          setOperator(inputType);
-          setDisplay(`${display ? display + " " + inputType : inputType}`);
-        } else {
-          break;
-        }
-        break;
-      case "/":
-        if (input1 || result) {
-          setOperator(inputType);
-          setDisplay(`${display ? display + " " + inputType : inputType}`);
-        } else {
-          break;
-        }
-        break;
-      case "x":
-        if (input1 || result) {
-          setOperator(inputType);
-          setDisplay(`${display ? display + " " + inputType : inputType}`);
-        } else {
-          break;
-        }
-        break;
-      case ".":
-        //append . to input1 on first time
-        if (input1 && input1.indexOf(inputType) == -1) {
-          setInput1(input1 + inputType);
-          setDisplay(`${display ? display + " " + inputType : inputType}`);
-        }
-        break;
-      case 0:
-        setInput1(`${input1}${inputType}`);
-        //set 0 to input2 used in case of 'ENTER'
-        setInput2(`${input2}${inputType}`);
-        setDisplay(`${display ? display + " " + inputType : inputType}`);
-        break;
-      case "%":
-        if (input1) {
-          setOperator(inputType);
-          setDisplay(`${display ? display + " " + inputType : inputType}`);
-        } else {
-          break;
-        }
-        break;
-      case "+-":
-        let negate;
-        if (result) {
-          if (result.toString().indexOf("-") != -1) {
-            negate = `${result.toString().replace("-", "")}`;
-            setResult(result.toString().replace("-", ""));
-            //reverse negateive number on screen
-            setDisplay(display.replace(result.toString(), negate));
-          } else {
-            negate = `${"-"}${result}`;
-            setResult(negate);
-            //show negative number on screen
-            setDisplay(display.replace(result.toString(), negate));
-          }
-        } else {
-          if (input1 && input1.toString().indexOf("-") != -1) {
-            setInput1(input1.toString().replace("-", ""));
-            negate = `${input1.toString().replace("-", "")}`;
-            //reverse negateive number on screen
-            setDisplay(display.replace(input1.toString(), negate));
-          } else {
-            negate = `${"-"}${input1}`;
-            setInput1(negate);
-            //show negative number on screen
-            setDisplay(display.replace(input1.toString(), negate));
-          }
-        }
-        break;
-      default:
-        //check if numbers are entered in input
-        //perform operations
-        if (typeof inputType === "number" && !isNaN(inputType)) {
-          debugger;
-          setDisplay(`${display ? display + " " + inputType : inputType}`);
-          if (operator) {
-            setInput2(`${input2}${inputType}`);
-            switch (operator) {
-              case "+":
-                if (input1 && input2 && !result) {
-                  evaluate = parseFloat(input1) + parseFloat(input2);
-                  setResult(parseFloat(evaluate).toFixed(1));
-                  setDisplay(
-                    `${display ? display + " " + inputType : inputType}`
-                  );
-                  setInput1("");
-                  setInput2("");
-                } else if (result) {
-                  evaluate = parseFloat(result) + parseFloat(input2);
-                  setResult(parseFloat(evaluate).toFixed(1));
-                  setDisplay(
-                    `${display ? display + " " + inputType : inputType}`
-                  );
-                  setInput1("");
-                  setInput2("");
-                }
-                break;
-
-              default:
-                break;
-            }
-          } else {
-            setInput1(`${input1}${inputType}`);
-            //operations
-
-            //check if an operation is selected
-            // if (operator) {
-            //   // switch (operator) {
-            //   //   case "+":
-            //   //     if (result) {
-            //   //       setResult(
-            //   //         inputType + parseFloat(parseFloat(result).toFixed(1))
-            //   //       );
-            //   //       setInput2(inputType);
-            //   //       setInput1("");
-            //   //     } else {
-            //   //       setResult(
-            //   //         inputType + parseFloat(parseFloat(input1).toFixed(1))
-            //   //       );
-            //   //       setInput2(inputType);
-            //   //       setInput1("");
-            //   //     }
-            //   //     break;
-            //   //   case "-":
-            //   //     if (result) {
-            //   //       setResult(
-            //   //         inputType - parseFloat(parseFloat(result).toFixed(1))
-            //   //       );
-            //   //       setInput2(inputType);
-            //   //       setInput1("");
-            //   //     } else {
-            //   //       setResult(
-            //   //         inputType - parseFloat(parseFloat(input1).toFixed(1))
-            //   //       );
-            //   //       setInput2(inputType);
-            //   //       setInput1("");
-            //   //     }
-            //   //     break;
-            //   //   case "x":
-            //   //     if (result) {
-            //   //       setResult(
-            //   //         inputType * parseFloat(parseFloat(result).toFixed(1))
-            //   //       );
-            //   //       setInput2(inputType);
-            //   //       setInput1("");
-            //   //     } else {
-            //   //       setResult(
-            //   //         inputType + parseFloat(parseFloat(input1).toFixed(1))
-            //   //       );
-            //   //       setInput2(inputType);
-            //   //       setInput1("");
-            //   //     }
-            //   //     break;
-            //   //   case "/":
-            //   //     //break and do nothing if try to divide by 0
-            //   //     if (result) {
-            //   //       if (result == "0" || inputType == "0") {
-            //   //         break;
-            //   //       } else {
-            //   //         setResult(
-            //   //           inputType / parseFloat(parseFloat(result).toFixed(1))
-            //   //         );
-            //   //         setInput2(inputType);
-            //   //         setInput1("");
-            //   //       }
-            //   //     } else {
-            //   //       if (input1 == "0" || inputType == "0") {
-            //   //         break;
-            //   //       } else {
-            //   //         setResult(
-            //   //           inputType / parseFloat(parseFloat(input1).toFixed(1))
-            //   //         );
-            //   //         setInput2(inputType);
-            //   //         setInput1("");
-            //   //       }
-            //   //     }
-            //   //     break;
-            //   //   case "%":
-            //   //     let percentage;
-            //   //     if (result) {
-            //   //       percentage = getPercentage(parseFloat(result), inputType);
-            //   //       setResult(parseFloat(percentage).toFixed(1));
-            //   //       setInput2(inputType);
-            //   //       setInput1("");
-            //   //     } else {
-            //   //       percentage = getPercentage(parseFloat(input1), inputType);
-            //   //       setResult(parseFloat(percentage).toFixed(1));
-            //   //       setInput2(inputType);
-            //   //       setInput1("");
-            //   //     }
-            //   //     break;
-            //   //   default:
-            //   //     break;
-            //   // }
-            // }
-            // else {
-            //   //in case user initially only types numbers
-            //   //it will be concatenated to input1
-            //   //until user selects an operator & further input numbers
-            //   setInput1(`${input1}${inputType}`);
-            // }
-          }
-        }
-        break;
+      }
+      if (input1 && operator) {
+        setInput1(
+          parseFloat(
+            parseFloat(calculate(input1, operator, display)).toFixed(1)
+          )
+        );
+        setDisplay("");
+      }
+      setOperator(inputType);
     }
   };
-
-  //get percentage value
-  const getPercentage = (num1, num2) => {
-    let result = (num1 / 100) * num2;
-    return result;
-  };
-
   const buttonStyles = (buttonType) => {
     return {
       backgroundColor: typeof buttonType === "number" ? "#CCE5FF" : "#A2D0FA",
@@ -389,69 +61,114 @@ const Calculator = () => {
       fontWeight: 800,
       borderRadius: "5px",
       borderColor: "transparent",
-      textAlign: "center",
-      minWidth: "50px"
+      minWidth: buttonType !== "ENTER" ? "50px" : ""
     };
   };
-
+  let result = "";
+  if (input1) {
+    result = input1;
+  }
+  if (operator) {
+    result += operator;
+  }
   return (
-    <Row
+    <div
       style={{
         padding: "10px 10px",
         borderRadius: "5px",
-        backgroundColor: "#EBF5FF",
-        margin: "0 auto"
+        backgroundColor: "#EBF5FF"
+        // margin: "0 auto"
       }}
     >
-      <Col
-        span={24}
+      <Row
+        gutter={8}
         style={{
           backgroundColor: "#CCE5FF",
-          padding: "5px",
+          // padding: "5px",
           marginBottom: "15px",
           borderRadius: "6px"
         }}
-        block
       >
-        <Row gutter={8}>
-          <Col span={24} block>
-            <InputNumber
-              value={display}
-              bordered={false}
-              readOnly
-              style={{ textAlign: "left", width: "100%" }}
-            />
-          </Col>
-          <Col span={24} block>
-            <InputNumber
-              value={result}
-              bordered={false}
-              readOnly
-              style={{ textAlign: "right", width: "100%" }}
-            />
-          </Col>
-        </Row>
-      </Col>
-      <Col span={24} block>
-        <Row gutter={[58, 8]}>
-          {calculatorInputs.map((inputType) => {
-            return (
-              <Col span={inputType === "ENTER" ? 10 : 4} block>
-                <Button
-                  type="primary"
-                  size="large"
-                  onClick={() => onInputButtonClick(inputType)}
-                  style={buttonStyles(inputType)}
+        <Col span={24} block className="gutter-row">
+          <Input
+            value={result}
+            bordered={false}
+            readOnly
+            style={{ width: "100%" }}
+          />
+        </Col>
+        <Col span={24} block className="gutter-row">
+          <Input
+            value={display}
+            bordered={false}
+            readOnly
+            style={{ width: "100%" }}
+          />
+        </Col>
+      </Row>
+      {calculatorInputs.map((row, rowIndex) => {
+        return (
+          <Row
+            justify={
+              rowIndex === row.length - 1 ? "space-between" : "space-between"
+            }
+          >
+            {row.map((input) => {
+              return (
+                <Col
+                  span={
+                    rowIndex === row.length - 1 && input !== "ENTER"
+                      ? 4
+                      : input === "ENTER"
+                      ? 8
+                      : 24 / row.length
+                  }
+                  style={{
+                    marginBottom: "8px"
+                  }}
+                  block
                 >
-                  {inputType}
-                </Button>
-              </Col>
-            );
-          })}
-        </Row>
-      </Col>
-    </Row>
+                  <Button
+                    type="primary"
+                    size="large"
+                    onClick={() => onInputButtonClick(input)}
+                    style={buttonStyles(input)}
+                  >
+                    {input}
+                  </Button>
+                </Col>
+              );
+            })}
+          </Row>
+        );
+      })}
+    </div>
   );
 };
-
 export default Calculator;
+
+//get percentage value
+const getPercentage = (num1, num2) => {
+  let result = (num1 / 100) * num2;
+  return result;
+};
+function calculate(input1, operator, input2) {
+  switch (operator) {
+    case "+":
+      return Number(input1) + Number(input2) + "";
+    case "-":
+      return Number(input1) - Number(input2) + "";
+    case "*":
+      return Number(input1) * Number(input2) + "";
+    case "/":
+      if (input1 == "0" || input2 == "0") {
+        break;
+      } else {
+        return Number(input1) / Number(input2) + "";
+      }
+    case "%":
+      return getPercentage(Number(input1), Number(input2));
+    default:
+      break;
+  }
+}
